@@ -104,6 +104,7 @@ userTypeQuantityXmr(update, telegramClient, userRepository, daoTelegramBot, rest
             Message sentMessage = telegramClient.execute(sendMessage);
             daoTelegramBot.saveLastSentMessageId(sentMessage.getMessageId(), chatId);
             daoTelegramBot.updateBotState(LastBotStateEnum.BUY_XMR_COMMAND, String.valueOf(chatId), Currency.XMR, quantityXmr, null, null);
+            log.info("Update bot state");
         } catch (TelegramApiException exception) {
             throw new RuntimeException("Telegram API exception while user_type_quantity_zmr command", exception);
         }
