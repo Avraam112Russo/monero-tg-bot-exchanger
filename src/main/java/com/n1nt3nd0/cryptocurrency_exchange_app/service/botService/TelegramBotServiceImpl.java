@@ -2,6 +2,7 @@ package com.n1nt3nd0.cryptocurrency_exchange_app.service.botService;
 
 import com.n1nt3nd0.cryptocurrency_exchange_app.dao.DaoTelegramBot;
 import com.n1nt3nd0.cryptocurrency_exchange_app.dto.UserBotStateDto;
+import com.n1nt3nd0.cryptocurrency_exchange_app.repository.OrderRepository;
 import com.n1nt3nd0.cryptocurrency_exchange_app.repository.UserRepository;
 import com.n1nt3nd0.cryptocurrency_exchange_app.service.botCommands.BotCommand;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ public class TelegramBotServiceImpl implements TelegramBotService {
     private final TelegramClient telegramClient;
     private final DaoTelegramBot daoTelegramBot;
     private final UserRepository userRepository;
+    private final OrderRepository orderRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final RestTemplate restTemplate;
     @Override
@@ -29,9 +31,9 @@ public class TelegramBotServiceImpl implements TelegramBotService {
             String message = update.getMessage().getText();
             try {
 
-                BotCommand botCommands = (BotCommand) redisTemplate.opsForHash().get("bot_commands", message);
+                BotCommand botCommands = daoTelegramBot.getBotCommandByName(message);
                 if (botCommands != null){
-                    botCommands.execute(update, telegramClient, userRepository, daoTelegramBot, restTemplate);
+                    botCommands.execute(update, telegramClient, userRepository, daoTelegramBot, restTemplate, orderRepository);
             }
             }catch (RuntimeException exception){
                 log.error("error while sending command", exception);
@@ -39,16 +41,16 @@ public class TelegramBotServiceImpl implements TelegramBotService {
 
 
             if (isNumeric(message)) {
-                UserBotStateDto botStateDto = daoTelegramBot.getBotStateDto(String.valueOf(chatId));
-
-                if (botStateDto != null){
-                    log.info(botStateDto.toString());
-                }
-
-
-                BotCommand command = (BotCommand) redisTemplate.opsForHash().get("bot_commands", "/user_type_xmr_amount");
+                BotCommand command = daoTelegramBot.getBotCommandByName("/user_type_xmr_amount");
                 if (command != null) {
-                    command.execute(update, telegramClient, userRepository, daoTelegramBot, restTemplate);
+                    command.execute(update, telegramClient, userRepository, daoTelegramBot, restTemplate, orderRepository);
+                }
+            }
+
+            if (message.length() > 40 && daoTelegramBot.getBotStateDto(String.valueOf(chatId)).getLastBotStateEnum().name().equals("USER_CHOOSE_PAYMENT_METHOD")){
+                BotCommand botCommandByName = daoTelegramBot.getBotCommandByName("/user_type_xmr_address");
+                if (botCommandByName != null) {
+                    botCommandByName.execute(update, telegramClient, userRepository, daoTelegramBot, restTemplate, orderRepository);
                 }
             }
 
@@ -58,9 +60,9 @@ public class TelegramBotServiceImpl implements TelegramBotService {
 
         if (update.hasCallbackQuery() && update.getCallbackQuery().getData() != null){
                 String callBackData = update.getCallbackQuery().getData();
-                BotCommand command = (BotCommand) redisTemplate.opsForHash().get("bot_commands", callBackData);
+                BotCommand command = daoTelegramBot.getBotCommandByName(callBackData);
                 if (command != null){
-                    command.execute(update, telegramClient, userRepository, daoTelegramBot, restTemplate);
+                    command.execute(update, telegramClient, userRepository, daoTelegramBot, restTemplate, orderRepository);
                 } else {
                     log.info("Command not found");
                     throw new RuntimeException("Command not found");
@@ -70,7 +72,7 @@ public class TelegramBotServiceImpl implements TelegramBotService {
 
     }
 
-    public boolean isNumeric(String strNum) {
+    private boolean isNumeric(String strNum) {
         if (strNum == null) {
             return false;
         }

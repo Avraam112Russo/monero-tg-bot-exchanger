@@ -22,4 +22,6 @@ public class UserBotStateDto implements Serializable {
     private double quantity;
     private PaymentMethod paymentMethod;
     private String address;
+    private double price_Xmr_Usd;
+    private double price_USD_RUB;
 }

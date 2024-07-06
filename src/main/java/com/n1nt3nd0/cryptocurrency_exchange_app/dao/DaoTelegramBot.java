@@ -23,7 +23,10 @@ public class DaoTelegramBot implements Serializable {
                                Currency currency,
                                double quantity,
                                PaymentMethod paymentMethod,
-                               String address
+                               String address,
+                               double price_Xmr_Usd,
+                               double price_Usd_Rub
+
     ){
         String KEY = "USER_BOT_STATE";
         UserBotStateDto dto = UserBotStateDto.builder()
@@ -46,6 +49,13 @@ public class DaoTelegramBot implements Serializable {
         }
         if (address != null){
             dto.setAddress(address);
+        }
+        if (price_Xmr_Usd > 0){
+            dto.setPrice_Xmr_Usd(price_Xmr_Usd);
+        }
+
+        if (price_Usd_Rub > 0){
+            dto.setPrice_USD_RUB(price_Usd_Rub);
         }
 
         redisTemplate.opsForHash().put(KEY, chatId, dto);

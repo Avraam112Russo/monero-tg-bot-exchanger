@@ -4,6 +4,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.n1nt3nd0.cryptocurrency_exchange_app.dao.DaoTelegramBot;
 import com.n1nt3nd0.cryptocurrency_exchange_app.entity.botEnum.Currency;
 import com.n1nt3nd0.cryptocurrency_exchange_app.entity.botEnum.LastBotStateEnum;
+import com.n1nt3nd0.cryptocurrency_exchange_app.repository.OrderRepository;
 import com.n1nt3nd0.cryptocurrency_exchange_app.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -28,7 +29,13 @@ import java.util.UUID;
 @Slf4j
 public class UserTypeQuantityXmr implements BotCommand{
     @Override
-    public void execute(Update update, TelegramClient telegramClient, UserRepository userRepository, DaoTelegramBot daoTelegramBot, RestTemplate restTemplate) {
+    public void execute(Update update,
+                        TelegramClient telegramClient,
+                        UserRepository userRepository,
+                        DaoTelegramBot daoTelegramBot,
+                        RestTemplate restTemplate,
+    OrderRepository orderRepository
+    ) {
 userTypeQuantityXmr(update, telegramClient, userRepository, daoTelegramBot, restTemplate);
     }
     private void userTypeQuantityXmr(Update update,
@@ -43,15 +50,8 @@ userTypeQuantityXmr(update, telegramClient, userRepository, daoTelegramBot, rest
         Object response = restTemplate.getForObject(uriComponentsBuilder.toUriString(), Object.class);
         String lastXmrMarketPrice = JsonPath.parse(response).read("$.context.market_price_usd", String.class);
         log.info(lastXmrMarketPrice);
-        daoTelegramBot.updateBotState(
-                LastBotStateEnum.USER_TYPE_AMOUNT_XMR_WANT_BUY,
-                String.valueOf(chatId),
-                Currency.XMR,
-                quantityXmr,
-                null,
-                null
-                );
         double marketPriceRub = Double.parseDouble(lastXmrMarketPrice) * 90; // 15.970, 283729378293
+
         double truncatedMarketPriceRub = BigDecimal.valueOf(marketPriceRub).setScale(3, RoundingMode.HALF_UP).doubleValue(); // 15.970, 283
         double checkOutSum = quantityXmr * marketPriceRub;
         double truncateCheckOutSum = Math.floor(checkOutSum * 100) / 100;
@@ -76,20 +76,21 @@ userTypeQuantityXmr(update, telegramClient, userRepository, daoTelegramBot, rest
                                 new InlineKeyboardRow(InlineKeyboardButton
                                         .builder()
                                         .text("Сбербанк (%s) RUB.".formatted(truncateCheckOutSum))
-                                        .callbackData("Сбербанк")
-                                        .build()
-                                ), new InlineKeyboardRow(InlineKeyboardButton
-                                        .builder()
-                                        .text("Тинькоф (%s) RUB.".formatted(truncateCheckOutSum))
-                                        .callbackData("Тинькоф")
-                                        .build()
-                                ),
-                                new InlineKeyboardRow(InlineKeyboardButton
-                                        .builder()
-                                        .text("Альфа Банк (%s) RUB.".formatted(truncateCheckOutSum))
-                                        .callbackData("Альфа банк")
+                                        .callbackData("SBER")
                                         .build()
                                 )
+//                                , new InlineKeyboardRow(InlineKeyboardButton
+//                                        .builder()
+//                                        .text("Тинькоф (%s) RUB.".formatted(truncateCheckOutSum))
+//                                        .callbackData("T_BANK")
+//                                        .build()
+//                                ),
+//                                new InlineKeyboardRow(InlineKeyboardButton
+//                                        .builder()
+//                                        .text("Альфа Банк (%s) RUB.".formatted(truncateCheckOutSum))
+//                                        .callbackData("ALFA")
+//                                        .build()
+//                                )
                         ))
                         .build())
                 .build();
@@ -103,8 +104,16 @@ userTypeQuantityXmr(update, telegramClient, userRepository, daoTelegramBot, rest
             }
             Message sentMessage = telegramClient.execute(sendMessage);
             daoTelegramBot.saveLastSentMessageId(sentMessage.getMessageId(), chatId);
-            daoTelegramBot.updateBotState(LastBotStateEnum.BUY_XMR_COMMAND, String.valueOf(chatId), Currency.XMR, quantityXmr, null, null);
-            log.info("Update bot state");
+            daoTelegramBot.updateBotState(
+                    LastBotStateEnum.USER_TYPE_AMOUNT_XMR_WANT_BUY,
+                    String.valueOf(chatId),
+                    Currency.XMR,
+                    quantityXmr,
+                    null,
+                    null,
+                    Double.parseDouble(lastXmrMarketPrice),
+                    90 // TODO get price USDRUB from stock exchange
+            );            log.info("Update bot state: {}", daoTelegramBot.getBotStateDto(String.valueOf(chatId)));
         } catch (TelegramApiException exception) {
             throw new RuntimeException("Telegram API exception while user_type_quantity_zmr command", exception);
         }

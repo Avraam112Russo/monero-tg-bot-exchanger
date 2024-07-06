@@ -23,6 +23,8 @@ public class UserTelegramBot {
     private String chatId;
     @Column(name = "username")
     private String username;
+    @Column(name = "balance")
+    private int balance;
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 }

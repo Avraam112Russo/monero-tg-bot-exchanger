@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet logicalFilePath="2024-07-04-2-create-table-orders"
+               id="2024-07-04-2-create-table-orders" author="avraam112russo">
+        <createTable tableName="t_xmr_exchange_order">
+            <column name="id" type="serial">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="address" type="varchar(256)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payment_method" type="varchar(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="xmr_quantity" type="double">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sum_to_pay_rub" type="double">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_market_price_usd" type="double">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="user_id" references="t_users(id)"/>
+            </column>
+        </createTable>
+
+    </changeSet>
+
+</databaseChangeLog>

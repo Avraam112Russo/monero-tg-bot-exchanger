@@ -3,6 +3,7 @@ package com.n1nt3nd0.cryptocurrency_exchange_app.service.botCommands;
 import com.n1nt3nd0.cryptocurrency_exchange_app.dao.DaoTelegramBot;
 import com.n1nt3nd0.cryptocurrency_exchange_app.entity.UserTelegramBot;
 import com.n1nt3nd0.cryptocurrency_exchange_app.entity.botEnum.LastBotStateEnum;
+import com.n1nt3nd0.cryptocurrency_exchange_app.repository.OrderRepository;
 import com.n1nt3nd0.cryptocurrency_exchange_app.repository.UserRepository;
 import com.vdurmont.emoji.EmojiParser;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +34,8 @@ public class StartCommand implements BotCommand {
                         TelegramClient telegramClient,
                         UserRepository userRepository,
                         DaoTelegramBot daoTelegramBot,
-                        RestTemplate restTemplate
+                        RestTemplate restTemplate,
+                        OrderRepository orderRepository
     ) {
         startCommand(update, telegramClient, userRepository, daoTelegramBot);
     }
@@ -72,7 +74,16 @@ public class StartCommand implements BotCommand {
 
 
 
-        daoTelegramBot.updateBotState(LastBotStateEnum.START_COMMAND, String.valueOf(chatId), null, 0, null, null);
+        daoTelegramBot.updateBotState(LastBotStateEnum.START_COMMAND,
+                String.valueOf(chatId),
+                null,
+                0,
+                null,
+                null,
+                0,
+                0
+
+        );
         SendMessage sendMessage = SendMessage // Create a message object
                 .builder()
                 .chatId(chatId)

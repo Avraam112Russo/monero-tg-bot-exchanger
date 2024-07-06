@@ -1,9 +1,7 @@
 package com.n1nt3nd0.cryptocurrency_exchange_app.config;
 
-import com.n1nt3nd0.cryptocurrency_exchange_app.service.botCommands.BuyXmrCommand;
-import com.n1nt3nd0.cryptocurrency_exchange_app.service.botCommands.UserTypeQuantityXmr;
+import com.n1nt3nd0.cryptocurrency_exchange_app.service.botCommands.*;
 import com.n1nt3nd0.cryptocurrency_exchange_app.service.botService.TelegramBotService;
-import com.n1nt3nd0.cryptocurrency_exchange_app.service.botCommands.StartCommand;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +24,10 @@ public class BotInit {
     private final StartCommand startCommand;
     private final BuyXmrCommand buyXmrCommand;
     private final UserTypeQuantityXmr userTypeQuantityXmr;
-
+    private final UserSelectedPaymentMethodCommand userSelectedPaymentMethodCommand;
+    private final SendConfirmMessageCommand sendConfirmMessageCommand;
+    private final NewXmrExchangeOrder newXmrExchangeOrder;
+    private final UserMadePaymentCommand userMadePaymentCommand;
     @PostConstruct
     public void init() {
         try {
@@ -34,6 +35,11 @@ public class BotInit {
          redisTemplate.opsForHash().put(BOT_COMMANDS, "/start", startCommand);
          redisTemplate.opsForHash().put(BOT_COMMANDS, "/buy_monero", buyXmrCommand);
          redisTemplate.opsForHash().put(BOT_COMMANDS, "/user_type_xmr_amount", userTypeQuantityXmr);
+         redisTemplate.opsForHash().put(BOT_COMMANDS, "SBER", userSelectedPaymentMethodCommand);
+         redisTemplate.opsForHash().put(BOT_COMMANDS, "/user_type_xmr_address", sendConfirmMessageCommand);
+         redisTemplate.opsForHash().put(BOT_COMMANDS, "/confirm", newXmrExchangeOrder);
+         redisTemplate.opsForHash().put(BOT_COMMANDS, "/the_user_has_made_a_payment", userMadePaymentCommand);
+
          TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication();
         botsApplication.registerBot(botToken, telegramBot);
         log.info("Bot initialized successfully!");
