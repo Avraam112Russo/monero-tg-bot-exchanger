@@ -1,9 +1,9 @@
 package com.n1nt3nd0.cryptocurrency_exchange_app.service.botService;
 
 import com.n1nt3nd0.cryptocurrency_exchange_app.dao.DaoTelegramBot;
-import com.n1nt3nd0.cryptocurrency_exchange_app.dto.UserBotStateDto;
 import com.n1nt3nd0.cryptocurrency_exchange_app.repository.OrderRepository;
 import com.n1nt3nd0.cryptocurrency_exchange_app.repository.UserRepository;
+import com.n1nt3nd0.cryptocurrency_exchange_app.service.botAdminService.BotAdminService;
 import com.n1nt3nd0.cryptocurrency_exchange_app.service.botCommands.BotCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,12 +23,22 @@ public class TelegramBotServiceImpl implements TelegramBotService {
     private final OrderRepository orderRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final RestTemplate restTemplate;
+    private final BotAdminService botAdminService;
     @Override
     public void consume(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
+
+
             Long chatId = update.getMessage().getChatId();
             String userName = update.getMessage().getFrom().getUserName();
             String message = update.getMessage().getText();
+
+            if (chatId == 7319257049L && userName.equals("ep1ct3t")){
+                botAdminService.directTextAdminCommands(update);
+            }
+
+
+
             try {
 
                 BotCommand botCommands = daoTelegramBot.getBotCommandByName(message);

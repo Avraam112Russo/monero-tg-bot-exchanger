@@ -32,6 +32,7 @@ public class BotInit {
     public void init() {
         try {
          String BOT_COMMANDS = "bot_commands";
+         String BOT_ADMIN_COMMANDS = "bot__admin_commands";
          redisTemplate.opsForHash().put(BOT_COMMANDS, "/start", startCommand);
          redisTemplate.opsForHash().put(BOT_COMMANDS, "/buy_monero", buyXmrCommand);
          redisTemplate.opsForHash().put(BOT_COMMANDS, "/user_type_xmr_amount", userTypeQuantityXmr);
@@ -39,6 +40,10 @@ public class BotInit {
          redisTemplate.opsForHash().put(BOT_COMMANDS, "/user_type_xmr_address", sendConfirmMessageCommand);
          redisTemplate.opsForHash().put(BOT_COMMANDS, "/confirm", newXmrExchangeOrder);
          redisTemplate.opsForHash().put(BOT_COMMANDS, "/the_user_has_made_a_payment", userMadePaymentCommand);
+
+
+//         redisTemplate.opsForHash().put(BOT_ADMIN_COMMANDS, null, null);
+
 
          TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication();
         botsApplication.registerBot(botToken, telegramBot);

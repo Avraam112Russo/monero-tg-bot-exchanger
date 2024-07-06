@@ -1,5 +1,6 @@
 package com.n1nt3nd0.cryptocurrency_exchange_app.dao;
 
+import com.n1nt3nd0.cryptocurrency_exchange_app.dto.AdminTransactionDto;
 import com.n1nt3nd0.cryptocurrency_exchange_app.dto.UserBotStateDto;
 import com.n1nt3nd0.cryptocurrency_exchange_app.entity.botEnum.Currency;
 import com.n1nt3nd0.cryptocurrency_exchange_app.entity.botEnum.LastBotStateEnum;
@@ -82,5 +83,15 @@ public class DaoTelegramBot implements Serializable {
             return (int) lastMessageId;
         }
         return 0;
+    }
+
+    public void saveAdminTransactionDto(AdminTransactionDto adminDto) {
+        String key = "admin_transaction_dto";
+        redisTemplate.opsForHash().put(key, adminDto.getChatId(), adminDto);
+    }
+
+    public void getAdminTransactionDto(String chatId) {
+        String key = "admin_transaction_dto";
+        redisTemplate.opsForHash().get(key, chatId);
     }
 }

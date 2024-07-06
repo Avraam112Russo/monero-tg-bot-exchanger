@@ -1,6 +1,7 @@
 package com.n1nt3nd0.cryptocurrency_exchange_app.service.botCommands;
 
 import com.n1nt3nd0.cryptocurrency_exchange_app.dao.DaoTelegramBot;
+import com.n1nt3nd0.cryptocurrency_exchange_app.dto.AdminTransactionDto;
 import com.n1nt3nd0.cryptocurrency_exchange_app.entity.XmrExchangeOrder;
 import com.n1nt3nd0.cryptocurrency_exchange_app.repository.OrderRepository;
 import com.n1nt3nd0.cryptocurrency_exchange_app.repository.UserRepository;
@@ -10,9 +11,14 @@ import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -63,8 +69,8 @@ public class UserMadePaymentCommand implements BotCommand {
                 "\n" +
                 "Payment method: " + paymentMethod + "\n" +
                 "Amount to be paid: " + amountToBePaid + "\n" +
-                "Username: " + username + "\n" +
-                "XMR quantity: " + xmrQuantity + "\n" +
+                "Username: \t" + username + "\n" +
+                "XMR quantity: \t" + xmrQuantity + "\n" +
                 "Xmr address: " + xmrAddress + "\n" +
                 "Order id: " + orderId +
                 "";
@@ -75,22 +81,22 @@ public class UserMadePaymentCommand implements BotCommand {
                 .builder()
                 .chatId(7319257049L)
 //                // Set the keyboard markup
-//                .replyMarkup(InlineKeyboardMarkup
-//                        .builder()
-//                        .keyboard(List.of(
-//                                new InlineKeyboardRow(InlineKeyboardButton
-//                                        .builder()
-//                                        .text("Подтвердить платеж")
-//                                        .callbackData("/confirmPaymentAdminCommand")
-//                                        .build()
-//                                ), new InlineKeyboardRow(InlineKeyboardButton
-//                                        .builder()
-//                                        .text("Платеж не найден")
-//                                        .callbackData("Платеж не найден")
-//                                        .build()
-//                                )
-//                        ))
-//                        .build())
+                .replyMarkup(InlineKeyboardMarkup
+                        .builder()
+                        .keyboard(List.of(
+                                new InlineKeyboardRow(InlineKeyboardButton
+                                        .builder()
+                                        .text("Подтвердить платеж")
+                                        .callbackData("/confirmPaymentAdminCommand")
+                                        .build()
+                                ), new InlineKeyboardRow(InlineKeyboardButton
+                                        .builder()
+                                        .text("Платеж не найден")
+                                        .callbackData("Платеж не найден")
+                                        .build()
+                                )
+                        ))
+                        .build())
                 .text(message)
                 // Set the keyboard markup
                 .build();
@@ -98,8 +104,17 @@ public class UserMadePaymentCommand implements BotCommand {
 
         try {
             telegramClient.execute(new_message);
-            telegramClient.execute(SEND_MESSAGE_TO_ADMIN);
-            log.info("Send message to admin with successfully! ");
+            Message sentMessageToAdmin = telegramClient.execute(SEND_MESSAGE_TO_ADMIN);
+            AdminTransactionDto adminDto = AdminTransactionDto.builder()
+                    .id(order.getId())
+                    .chatId(String.valueOf(chatId))
+                    .username(username)
+                    .messageId(String.valueOf(sentMessageToAdmin.getMessageId()))
+                    .build();
+            daoTelegramBot.saveAdminTransactionDto(adminDto);
+            log.info("Send message to admin with successfully! \n ");
+            log.info("Fetch admin dto: " + adminDto);
+
         } catch (TelegramApiException e) {
             log.error("error while update has callback query: " + e.getMessage());
             throw new RuntimeException();

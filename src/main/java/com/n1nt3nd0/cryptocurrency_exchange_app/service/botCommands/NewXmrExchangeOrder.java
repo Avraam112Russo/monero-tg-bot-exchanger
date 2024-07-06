@@ -87,14 +87,14 @@ public class NewXmrExchangeOrder implements BotCommand {
 
                                         new InlineKeyboardRow(InlineKeyboardButton
                                                 .builder()
-                                                .text("Я оплатил")
-                                                .callbackData("/the_user_has_made_a_payment")
+                                                .text("Я оплатил" )
+                                                .callbackData("/the_user_has_made_a_payment"  )
                                                 .build()
                                         ),
                                         new InlineKeyboardRow(InlineKeyboardButton
                                                 .builder()
                                                 .text("Отмена")
-                                                .callbackData("Отмена")
+                                                .callbackData("/Отмена" )
                                                 .build()
                                         )
                                 )
