@@ -4,6 +4,7 @@ import com.n1nt3nd0.cryptocurrency_exchange_app.dao.DaoTelegramBot;
 import com.n1nt3nd0.cryptocurrency_exchange_app.dto.UserBotStateDto;
 import com.n1nt3nd0.cryptocurrency_exchange_app.entity.UserTelegramBot;
 import com.n1nt3nd0.cryptocurrency_exchange_app.entity.XmrExchangeOrder;
+import com.n1nt3nd0.cryptocurrency_exchange_app.entity.XmrOrderStatus;
 import com.n1nt3nd0.cryptocurrency_exchange_app.repository.OrderRepository;
 import com.n1nt3nd0.cryptocurrency_exchange_app.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +50,7 @@ public class NewXmrExchangeOrder implements BotCommand {
         UserBotStateDto botStateDto = daoTelegramBot.getBotStateDto(String.valueOf(chatId));
         double quantityXmrOrder = botStateDto.getQuantity();
         double lastMarketPriceUsd = botStateDto.getPrice_Xmr_Usd();
-        double sumToPayInRuble = quantityXmrOrder * lastMarketPriceUsd * 90; // TODO: fetch currently price USDRUB usage rest api
+        double sumToPayInRuble = quantityXmrOrder * lastMarketPriceUsd * 90; // TODO: to fetch currently price USDRUB usage rest api
         Optional<UserTelegramBot> mayBeUser = userRepository.findUserTelegramBotByUsername(update.getCallbackQuery().getMessage().getChat().getUserName());
         XmrExchangeOrder order = XmrExchangeOrder.builder()
                 .paymentMethod(botStateDto.getPaymentMethod())
@@ -59,6 +60,7 @@ public class NewXmrExchangeOrder implements BotCommand {
                 .sumToPayRub(sumToPayInRuble)
                 .userTelegramBot(mayBeUser.get())
                 .createdAt(LocalDateTime.now())
+                .orderStatus(XmrOrderStatus.AWAITING_PAYMENT)
                 .build();
         XmrExchangeOrder savedOrder = orderRepository.save(order);
         log.info("Order {} saved successfully.", savedOrder.toString());

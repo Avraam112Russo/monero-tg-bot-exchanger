@@ -1,5 +1,6 @@
 package com.n1nt3nd0.cryptocurrency_exchange_app.config;
 
+import com.n1nt3nd0.cryptocurrency_exchange_app.service.botAdminService.botAdminCommands.ConfirmPaymentCommand;
 import com.n1nt3nd0.cryptocurrency_exchange_app.service.botCommands.*;
 import com.n1nt3nd0.cryptocurrency_exchange_app.service.botService.TelegramBotService;
 import jakarta.annotation.PostConstruct;
@@ -28,11 +29,15 @@ public class BotInit {
     private final SendConfirmMessageCommand sendConfirmMessageCommand;
     private final NewXmrExchangeOrder newXmrExchangeOrder;
     private final UserMadePaymentCommand userMadePaymentCommand;
+
+
+    private final ConfirmPaymentCommand confirmPaymentCommand;
+
     @PostConstruct
     public void init() {
         try {
          String BOT_COMMANDS = "bot_commands";
-         String BOT_ADMIN_COMMANDS = "bot__admin_commands";
+         String BOT_ADMIN_COMMANDS = "bot_admin_commands";
          redisTemplate.opsForHash().put(BOT_COMMANDS, "/start", startCommand);
          redisTemplate.opsForHash().put(BOT_COMMANDS, "/buy_monero", buyXmrCommand);
          redisTemplate.opsForHash().put(BOT_COMMANDS, "/user_type_xmr_amount", userTypeQuantityXmr);
@@ -42,7 +47,7 @@ public class BotInit {
          redisTemplate.opsForHash().put(BOT_COMMANDS, "/the_user_has_made_a_payment", userMadePaymentCommand);
 
 
-//         redisTemplate.opsForHash().put(BOT_ADMIN_COMMANDS, null, null);
+         redisTemplate.opsForHash().put(BOT_ADMIN_COMMANDS, "/confirm_payment", confirmPaymentCommand);
 
 
          TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication();

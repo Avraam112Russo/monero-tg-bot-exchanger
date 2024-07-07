@@ -35,6 +35,9 @@ public class XmrExchangeOrder {
     private double lastMarketPriceUsd;
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+    @Column(name = "order_status")
+    @Enumerated(EnumType.STRING)
+    private XmrOrderStatus orderStatus;
     @Column(name = "payment_method")
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;

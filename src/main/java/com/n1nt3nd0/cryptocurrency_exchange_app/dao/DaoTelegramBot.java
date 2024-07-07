@@ -87,11 +87,15 @@ public class DaoTelegramBot implements Serializable {
 
     public void saveAdminTransactionDto(AdminTransactionDto adminDto) {
         String key = "admin_transaction_dto";
-        redisTemplate.opsForHash().put(key, adminDto.getChatId(), adminDto);
+        redisTemplate.opsForHash().put(key, adminDto.getMessageId(), adminDto);
     }
 
-    public void getAdminTransactionDto(String chatId) {
+    public AdminTransactionDto getAdminTransactionDto(String messageId) {
         String key = "admin_transaction_dto";
-        redisTemplate.opsForHash().get(key, chatId);
+        AdminTransactionDto dto =(AdminTransactionDto) redisTemplate.opsForHash().get(key, messageId);
+        if (dto != null){
+            return dto;
+        }
+        throw new RuntimeException("ADMIN_TRANSACTION_DTO not found");
     }
 }

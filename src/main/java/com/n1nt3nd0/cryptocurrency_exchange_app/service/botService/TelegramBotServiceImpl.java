@@ -26,16 +26,24 @@ public class TelegramBotServiceImpl implements TelegramBotService {
     private final BotAdminService botAdminService;
     @Override
     public void consume(Update update) {
-        if (update.hasMessage() && update.getMessage().hasText()) {
+        if (update.hasMessage()
+                && update.getMessage().hasText()
+                && update.getMessage().getChatId() ==  7319257049L
+                && update.getMessage().getChat().getUserName().equals("ep1ct3t")) {
+
+            botAdminService.directTextAdminCommands(update);
+
+        }
+//        if (chatId == 7319257049L && userName.equals("ep1ct3t")){
+//        }
+        if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().getChatId() != 7319257049L) {
 
 
             Long chatId = update.getMessage().getChatId();
             String userName = update.getMessage().getFrom().getUserName();
             String message = update.getMessage().getText();
 
-            if (chatId == 7319257049L && userName.equals("ep1ct3t")){
-                botAdminService.directTextAdminCommands(update);
-            }
+
 
 
 
@@ -68,12 +76,24 @@ public class TelegramBotServiceImpl implements TelegramBotService {
 
 
 
-        if (update.hasCallbackQuery() && update.getCallbackQuery().getData() != null){
+        if (update.hasCallbackQuery() &&
+                update.getCallbackQuery().getMessage().getChatId() == 7319257049L
+                && update.getCallbackQuery().getMessage().getChat().getUserName().equals("ep1ct3t")){
+            botAdminService.directCallbackQueryAdminCommands(update);
+        }
+        if (update.hasCallbackQuery()
+                && update.getCallbackQuery().getData() != null
+                && update.getCallbackQuery().getMessage().getChatId() != 7319257049L ){
+            Long chatId = update.getCallbackQuery().getMessage().getChatId();
+            String userName = update.getCallbackQuery().getMessage().getChat().getUserName();
+
+
                 String callBackData = update.getCallbackQuery().getData();
                 BotCommand command = daoTelegramBot.getBotCommandByName(callBackData);
                 if (command != null){
                     command.execute(update, telegramClient, userRepository, daoTelegramBot, restTemplate, orderRepository);
-                } else {
+                }
+                else {
                     log.info("Command not found");
                     throw new RuntimeException("Command not found");
                 }

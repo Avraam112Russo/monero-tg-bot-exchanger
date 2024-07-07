@@ -3,6 +3,7 @@ package com.n1nt3nd0.cryptocurrency_exchange_app.service.botCommands;
 import com.n1nt3nd0.cryptocurrency_exchange_app.dao.DaoTelegramBot;
 import com.n1nt3nd0.cryptocurrency_exchange_app.dto.AdminTransactionDto;
 import com.n1nt3nd0.cryptocurrency_exchange_app.entity.XmrExchangeOrder;
+import com.n1nt3nd0.cryptocurrency_exchange_app.entity.XmrOrderStatus;
 import com.n1nt3nd0.cryptocurrency_exchange_app.repository.OrderRepository;
 import com.n1nt3nd0.cryptocurrency_exchange_app.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +58,6 @@ public class UserMadePaymentCommand implements BotCommand {
                 .text(answer)
                 .build();
 
-
         Optional<XmrExchangeOrder> mayBeOrderWithUser = orderRepository.findOrderWithUser(username);
         XmrExchangeOrder order = mayBeOrderWithUser.orElseThrow(() -> new RuntimeException("Order not found"));
         String paymentMethod = order.getPaymentMethod().name();
@@ -65,15 +65,19 @@ public class UserMadePaymentCommand implements BotCommand {
         String xmrQuantity = String.valueOf(order.getXmrQuantity());
         String xmrAddress = order.getAddress();
         String orderId = String.valueOf(order.getId());
-        String message = "The User has made a payment. Please, check the transaction and send the coins. \n" +
+
+        order.setOrderStatus(XmrOrderStatus.USER_HAS_MADE_PAYMENT);
+        orderRepository.save(order);
+        String message = "Пользлватель совершил оплату. Пожалуйста, проверьте платеж и отправьте монеты. \n" +
                 "\n" +
-                "Payment method: " + paymentMethod + "\n" +
-                "Amount to be paid: " + amountToBePaid + "\n" +
+                "Способ оплаты: " + paymentMethod + "\n" +
+                "Сумма к оплате: " + amountToBePaid + "\n" +
                 "Username: \t" + username + "\n" +
-                "XMR quantity: \t" + xmrQuantity + "\n" +
-                "Xmr address: " + xmrAddress + "\n" +
+                "XMR количество: \t" + xmrQuantity + "\n" +
+                "Xmr адрес для отправки: " + xmrAddress + "\n" +
                 "Order id: " + orderId +
                 "";
+
 
 
 
@@ -87,7 +91,7 @@ public class UserMadePaymentCommand implements BotCommand {
                                 new InlineKeyboardRow(InlineKeyboardButton
                                         .builder()
                                         .text("Подтвердить платеж")
-                                        .callbackData("/confirmPaymentAdminCommand")
+                                        .callbackData("/confirm_payment")
                                         .build()
                                 ), new InlineKeyboardRow(InlineKeyboardButton
                                         .builder()
