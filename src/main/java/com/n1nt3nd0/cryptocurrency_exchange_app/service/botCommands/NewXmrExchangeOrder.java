@@ -47,11 +47,20 @@ public class NewXmrExchangeOrder implements BotCommand {
     ){
         long chatId = update.getCallbackQuery().getMessage().getChatId();
         Integer messageId = update.getCallbackQuery().getMessage().getMessageId();
+        String userName = update.getCallbackQuery().getMessage().getChat().getUserName();
         UserBotStateDto botStateDto = daoTelegramBot.getBotStateDto(String.valueOf(chatId));
         double quantityXmrOrder = botStateDto.getQuantity();
         double lastMarketPriceUsd = botStateDto.getPrice_Xmr_Usd();
         double sumToPayInRuble = quantityXmrOrder * lastMarketPriceUsd * 90; // TODO: to fetch currently price USDRUB usage rest api
         Optional<UserTelegramBot> mayBeUser = userRepository.findUserTelegramBotByUsername(update.getCallbackQuery().getMessage().getChat().getUserName());
+
+        LocalDateTime orderCreatedAt = LocalDateTime.now();
+        LocalDateTime orderExpiresAt = LocalDateTime.now().plusMinutes(1);
+
+
+        if (orderRepository.findOrderWithUser(userName).isPresent()){
+            throw new RuntimeException("Order already exists");
+        }
         XmrExchangeOrder order = XmrExchangeOrder.builder()
                 .paymentMethod(botStateDto.getPaymentMethod())
                 .address(botStateDto.getAddress())
@@ -59,7 +68,8 @@ public class NewXmrExchangeOrder implements BotCommand {
                 .lastMarketPriceUsd(lastMarketPriceUsd)
                 .sumToPayRub(sumToPayInRuble)
                 .userTelegramBot(mayBeUser.get())
-                .createdAt(LocalDateTime.now())
+                .createdAt(orderCreatedAt)
+                .expiresAt(orderExpiresAt)
                 .orderStatus(XmrOrderStatus.AWAITING_PAYMENT)
                 .build();
         XmrExchangeOrder savedOrder = orderRepository.save(order);

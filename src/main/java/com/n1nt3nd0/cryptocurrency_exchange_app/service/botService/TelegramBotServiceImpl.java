@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
@@ -47,15 +48,13 @@ public class TelegramBotServiceImpl implements TelegramBotService {
 
 
 
-            try {
 
                 BotCommand botCommands = daoTelegramBot.getBotCommandByName(message);
                 if (botCommands != null){
                     botCommands.execute(update, telegramClient, userRepository, daoTelegramBot, restTemplate, orderRepository);
-            }
-            }catch (RuntimeException exception){
-                log.error("error while sending command", exception);
-            }
+            } else {
+                    log.error("BotCommand not found");
+                }
 
 
             if (isNumeric(message)) {

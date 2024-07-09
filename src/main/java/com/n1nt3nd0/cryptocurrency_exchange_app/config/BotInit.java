@@ -1,6 +1,7 @@
 package com.n1nt3nd0.cryptocurrency_exchange_app.config;
 
 import com.n1nt3nd0.cryptocurrency_exchange_app.service.botAdminService.botAdminCommands.ConfirmPaymentCommand;
+import com.n1nt3nd0.cryptocurrency_exchange_app.service.botAdminService.botAdminCommands.SendFundsAdminCommand;
 import com.n1nt3nd0.cryptocurrency_exchange_app.service.botCommands.*;
 import com.n1nt3nd0.cryptocurrency_exchange_app.service.botService.TelegramBotService;
 import jakarta.annotation.PostConstruct;
@@ -32,6 +33,7 @@ public class BotInit {
 
 
     private final ConfirmPaymentCommand confirmPaymentCommand;
+    private final SendFundsAdminCommand sendFundsAdminCommand;
 
     @PostConstruct
     public void init() {
@@ -48,6 +50,8 @@ public class BotInit {
 
 
          redisTemplate.opsForHash().put(BOT_ADMIN_COMMANDS, "/confirm_payment", confirmPaymentCommand);
+         redisTemplate.opsForHash().put(BOT_ADMIN_COMMANDS, "/send_funds", sendFundsAdminCommand);
+
 
 
          TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication();

@@ -5,7 +5,6 @@ import com.n1nt3nd0.cryptocurrency_exchange_app.dto.AdminTransactionDto;
 import com.n1nt3nd0.cryptocurrency_exchange_app.entity.XmrExchangeOrder;
 import com.n1nt3nd0.cryptocurrency_exchange_app.entity.XmrOrderStatus;
 import com.n1nt3nd0.cryptocurrency_exchange_app.repository.OrderRepository;
-import com.vdurmont.emoji.EmojiParser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -26,61 +25,48 @@ import static java.lang.Math.toIntExact;
 
 @Component
 @Slf4j
-public class ConfirmPaymentCommand implements BotAdminCommands {
+public class SendFundsAdminCommand implements BotAdminCommands {
     @Override
-    public void execute(Update update,
-                        DaoTelegramBot daoTelegramBot,
-                        TelegramClient telegramClient,
-                        OrderRepository orderRepository) {
-        confirmPayment(update, daoTelegramBot, telegramClient, orderRepository);
+    public void execute(Update update, DaoTelegramBot daoTelegramBot, TelegramClient telegramClient, OrderRepository orderRepository) {
+        sendFunds(update, daoTelegramBot, telegramClient, orderRepository);
     }
-
-
-    private void confirmPayment(Update update, DaoTelegramBot daoTelegramBot, TelegramClient telegramClient, OrderRepository orderRepository) {
-
+    private void sendFunds(Update update, DaoTelegramBot daoTelegramBot, TelegramClient telegramClient, OrderRepository orderRepository){
         Integer messageId = update.getCallbackQuery().getMessage().getMessageId();
         AdminTransactionDto adminTransactionDto = daoTelegramBot.getAdminTransactionDto(String.valueOf(messageId));
         String username = adminTransactionDto.getUsername();
+        String chatId = adminTransactionDto.getChatId();
+
         Optional<XmrExchangeOrder> mayBeOrder = orderRepository.findOrderWithUser(username);
         XmrExchangeOrder order = mayBeOrder.orElseThrow(() -> new RuntimeException("Order %s not found".formatted(username)));
-        order.setOrderStatus(XmrOrderStatus.ADMIN_CONFIRMED_PAYMENT);
+        order.setOrderStatus(XmrOrderStatus.FUNDS_HAVE_BEEN_SENT);
         orderRepository.save(order);
+        String messageText = "Ваша заявка исполнена № " + order.getId() + "\n" +
+                "  \n" +
+                "На ваш кошелек:" + order.getAddress() + "\n" +
+                "\n" +
+                "Отправлена сумма:" + order.getXmrQuantity() + "\n" +
+                "\n" +
+                "Все обмены зачисляются после 5-15 подтверждений от сети, всё зависит от вашего сервиса, на котором расположен ваш кошелек.\n" +
+                "\n" +
+                "Время зачисления XMR при обычной загруженности в среднем от 20 минут.\n" +
+                "\n" +
+                "Процедура подтверждения НЕ ЗАВИСИТ от нас и определяется исключительно скоростью обработки транзакций криптовалютными сетями.\n" +
+                "\n" +
+                "\n" +
+                "Спасибо за обмен! Вам начислилось 17 руб. на внутренний баланс.";
         Long adminChatId = update.getCallbackQuery().getMessage().getChatId();
-        String chatId = adminTransactionDto.getChatId();
-        String messageText = "Оплата успешно произведена.\n В ближайшие 5 минут средства будут отправлены на ваш кошелек," +
-                "бот уведомит вас об этом. Пожалуйста, ожидайте. ";
+        String responseToAdmin = ("Средства пользователя %s отправлены").formatted(username);
+
         SendMessage sendMessage = SendMessage // Create a message object object
                 .builder()
                 .chatId(chatId)
                 .text(messageText)
                 .build();
 
-        String responseToAdmin = ("Платеж пользователя %s подтвержден." +
-                "" +
-                "").formatted(username);
         EditMessageText editMessageText = EditMessageText.builder()
                 .chatId(adminChatId)
                 .messageId(toIntExact(messageId))
                 .text(responseToAdmin)
-                .replyMarkup(InlineKeyboardMarkup
-                        .builder()
-                        .keyboard(List.of(
-
-                                        new InlineKeyboardRow(InlineKeyboardButton
-                                                .builder()
-                                                .text("Отправить средства" )
-                                                .callbackData("/send_funds"  )
-                                                .build()
-                                        ),
-                                        new InlineKeyboardRow(InlineKeyboardButton
-                                                .builder()
-                                                .text("Отмена")
-                                                .callbackData("/Отмена")
-                                                .build()
-                                        )
-                                )
-                        )
-                        .build())
                 .build();
 
         try {

@@ -2,10 +2,7 @@ package com.n1nt3nd0.cryptocurrency_exchange_app.entity;
 
 import com.n1nt3nd0.cryptocurrency_exchange_app.entity.botEnum.PaymentMethod;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -15,6 +12,7 @@ import java.time.LocalDateTime;
         }
 )
 @Data
+@ToString(exclude = "userTelegramBot")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -35,6 +33,8 @@ public class XmrExchangeOrder {
     private double lastMarketPriceUsd;
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
     @Column(name = "order_status")
     @Enumerated(EnumType.STRING)
     private XmrOrderStatus orderStatus;

@@ -13,4 +13,5 @@ public interface OrderRepository extends JpaRepository<XmrExchangeOrder, Integer
     @EntityGraph(value = "fetch_order_with_user")
     @Query(value = "select order from XmrExchangeOrder order where order.userTelegramBot.username=:username")
     Optional<XmrExchangeOrder> findOrderWithUser(@Param("username")String username);
+
 }
